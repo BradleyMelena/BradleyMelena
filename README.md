@@ -2,7 +2,7 @@
 
 Data Analytics & Information Systems graduate from the University of Cincinnati.
 
-🌐 **Live site:** [BradleyMelena.github.io](https://bradleymelena.github.io)
+🌐 **Live site:** [BradleyMelena.github.io/BradleyMelena](https://bradleymelena.github.io/BradleyMelena)
 
 ## Featured Projects
 
