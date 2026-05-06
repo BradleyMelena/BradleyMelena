@@ -113,11 +113,11 @@
     <button class="modal-close" onclick="closeModal()">✕</button>
     <h2>Connect Live Data</h2>
     <p class="modal-desc">Enter your free API keys to switch from simulated to real market data. Keys are held in memory only — never stored or sent anywhere.<br><br>
-    Get free keys: <a href="https://www.alphavantage.co/support/#api-key" target="_blank">Alpha Vantage</a> · <a href="https://finnhub.io/register" target="_blank">Finnhub</a> · <a href="https://gnews.io/register" target="_blank">GNews</a></p>
+    Get free keys: <a href="https://www.alphavantage.co/support/#api-key" target="_blank">Alpha Vantage</a> · <a href="https://finnhub.io/register" target="_blank">Finnhub</a> · Finnhub (news included with your key)</p>
     
     <div class="field"><label>Alpha Vantage Key *</label><input type="password" id="key-av" placeholder="Your Alpha Vantage key"/></div>
     <div class="field"><label>Finnhub Key *</label><input type="password" id="key-fh" placeholder="Your Finnhub key"/></div>
-    <div class="field"><label>GNews Key (optional)</label><input type="password" id="key-news" placeholder="Your GNews key"/></div>
+    
     <div class="modal-actions">
       <button class="btn-activate" onclick="activateLive()">Activate Live Mode</button>
       <button class="btn-use-demo" onclick="activateDemo()">Use Demo</button>
@@ -187,23 +187,24 @@ async function fetchAV(ticker){
   if(!d['Time Series (Daily)'])throw new Error('No data returned for '+ticker);
   const ts=d['Time Series (Daily)'];
   const dates=Object.keys(ts).sort().reverse();
-  return{prices:dates.slice(0,60).map(dt=>parseFloat(ts[dt]['4. close'])).reverse(),vols:dates.slice(0,60).map(dt=>parseInt(ts[dt]['6. volume'])).reverse()};
+  return{prices:dates.slice(0,60).map(dt=>parseFloat(ts[dt]['4. close'])).reverse(),vols:dates.slice(0,60).map(dt=>parseInt(ts[dt]['5. volume']||ts[dt]['6. volume']||0)).reverse()};
 }
 async function fetchFH(ticker){
   const[qr,pr]=await Promise.all([fetch(`https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${keys.fh}`),fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${keys.fh}`)]);
   return{quote:await qr.json(),profile:await pr.json()};
 }
-async function fetchNews(ticker,name){console.log("GNews request for:",ticker);
-console.log('Fetching GNews for:',ticker);
-  const r=await fetch(`https://gnews.io/api/v4/search?q=${encodeURIComponent(ticker+' '+name)}&lang=en&max=8&apikey=${keys.news}`);
+async function fetchNews(ticker){
+  const to=new Date().toISOString().slice(0,10);
+  const from=new Date(Date.now()-30*24*60*60*1000).toISOString().slice(0,10);
+  const r=await fetch(`https://finnhub.io/api/v1/company-news?symbol=${ticker}&from=${from}&to=${to}&token=${keys.fh}`);
   const d=await r.json();
-  return(d.articles||[]).map(a=>({title:a.title,source:a.source?.name||'News',date:a.publishedAt?.slice(0,10)||'',sentiment:sentOf((a.title||'')+(a.description||''))}));
+  return(d||[]).slice(0,8).map(a=>({title:a.headline,source:a.source||'News',date:a.datetime?new Date(a.datetime*1000).toISOString().slice(0,10):'',sentiment:sentOf((a.headline||'')+(a.summary||''))}));
 }
 async function getLiveData(ticker){
   setLT('Fetching price history...');const{prices,vols}=await fetchAV(ticker);
   setLT('Loading real-time quote...');const{quote,profile}=await fetchFH(ticker);
   setLT('Scanning news...');let news=[];
-  try{if(keys.news)news=await fetchNews(ticker,profile.name||ticker);}catch(e){console.error('GNews error:',e.message);}
+  try{news=await fetchNews(ticker);}catch(e){console.error('News error:',e.message);}
   const cur=quote.c||prices[prices.length-1],prev=quote.pc||prices[prices.length-2];
   return{ticker,name:profile.name||ticker,prices,cur,prev,change:((cur-prev)/prev)*100,high52:quote['52WeekHigh']||Math.max(...prices),low52:quote['52WeekLow']||Math.min(...prices),marketCap:profile.marketCapitalization?(profile.marketCapitalization*1e6).toFixed(0):null,avgVol:Math.round(vols.slice(-20).reduce((a,b)=>a+b,0)/20),news,isDemo:false};
 }
@@ -255,7 +256,7 @@ function render(d){
     <div class="metric"><div class="m-label">Market Cap</div><div class="m-val">${mcap}</div></div>
     <div class="metric"><div class="m-label">52W High</div><div class="m-val up">$${parseFloat(d.high52).toFixed(2)}</div></div>
     <div class="metric"><div class="m-label">52W Low</div><div class="m-val down">$${parseFloat(d.low52).toFixed(2)}</div></div>
-    <div class="metric"><div class="m-label">Avg Volume</div><div class="m-val">${(d.avgVol/1e6).toFixed(1)}M</div></div>
+    <div class="metric"><div class="m-label">Avg Volume</div><div class="m-val">${d.avgVol && !isNaN(d.avgVol) ? (d.avgVol/1e6).toFixed(1)+"M" : "N/A"}</div></div>
     <div class="metric"><div class="m-label">Volatility</div><div class="m-val">${vol}%</div><div class="m-sub">annualized</div></div>
     <div class="metric"><div class="m-label">Signal</div><div class="m-val" style="font-size:15px;color:${sigColor}">${sigText}</div></div>`;
 
@@ -335,7 +336,7 @@ function closeModal(){document.getElementById('modal').classList.remove('open');
 function activateLive(){
   const av=document.getElementById('key-av').value.trim(),fh=document.getElementById('key-fh').value.trim();
   if(!av||!fh){alert('Alpha Vantage and Finnhub keys are required.');return;}
-  keys={av,fh,news:document.getElementById('key-news').value.trim()};
+  keys={av,fh,news:''};
   isLive=true;
   const mt=document.getElementById('mode-tag');mt.textContent='✓ LIVE MODE';mt.className='mode-tag live-tag';
   closeModal();
