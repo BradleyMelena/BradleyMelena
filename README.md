@@ -1,16 +1,24 @@
-## Hi there 👋
+# Bradley S. Melena — Portfolio
 
-<!--
-**BradleyMelena/BradleyMelena** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+Data Analytics & Information Systems graduate from the University of Cincinnati.
 
-Here are some ideas to get you started:
+🌐 **Live site:** [bradleymelena.github.io](https://bradleymelena.github.io)
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+## Featured Projects
+
+| Project | Stack | Link |
+|---|---|---|
+| Stock Projector App | React, Alpha Vantage API, Finnhub, Sentiment Analysis | [Repo](#) |
+| Baseball Statistics Analyzer | Python, pybaseball, MLB Stats API | [Repo](#) |
+| Airline Passenger Dashboard | Tableau | [Tableau Public](#) |
+
+## Tech Stack
+
+**Languages:** Python · R · SQL · Rust · JavaScript  
+**Platforms:** Tableau · Databricks · Palantir Foundry · Supabase · Airbyte  
+**Tools:** VS Code · Git · R Shiny · Streamlit · ODBC  
+
+## Contact
+
+- 📧 melenabs@mail.uc.edu  
+- 💼 [linkedin.com/in/bradley-melena-2734a9267](https://www.linkedin.com/in/bradley-melena-2734a9267/)
