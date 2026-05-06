@@ -20,5 +20,5 @@ Data Analytics & Information Systems graduate from the University of Cincinnati.
 
 ## Contact
 
-- 📧 melenabs@mail.uc.edu  
+- 📧 bmelena42@gmail.com 
 - 💼 [linkedin.com/in/bradley-melena-2734a9267](https://www.linkedin.com/in/bradley-melena-2734a9267/)
