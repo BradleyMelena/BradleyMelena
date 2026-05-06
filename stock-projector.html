@@ -193,7 +193,8 @@ async function fetchFH(ticker){
   const[qr,pr]=await Promise.all([fetch(`https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${keys.fh}`),fetch(`https://finnhub.io/api/v1/stock/profile2?symbol=${ticker}&token=${keys.fh}`)]);
   return{quote:await qr.json(),profile:await pr.json()};
 }
-async function fetchNews(ticker,name){
+async function fetchNews(ticker,name){console.log("GNews request for:",ticker);
+console.log('Fetching GNews for:',ticker);
   const r=await fetch(`https://gnews.io/api/v4/search?q=${encodeURIComponent(ticker+' '+name)}&lang=en&max=8&apikey=${keys.news}`);
   const d=await r.json();
   return(d.articles||[]).map(a=>({title:a.title,source:a.source?.name||'News',date:a.publishedAt?.slice(0,10)||'',sentiment:sentOf((a.title||'')+(a.description||''))}));
@@ -202,7 +203,7 @@ async function getLiveData(ticker){
   setLT('Fetching price history...');const{prices,vols}=await fetchAV(ticker);
   setLT('Loading real-time quote...');const{quote,profile}=await fetchFH(ticker);
   setLT('Scanning news...');let news=[];
-  try{if(keys.news)news=await fetchNews(ticker,profile.name||ticker);}catch(e){}
+  try{if(keys.news)news=await fetchNews(ticker,profile.name||ticker);}catch(e){console.error('GNews error:',e.message);}
   const cur=quote.c||prices[prices.length-1],prev=quote.pc||prices[prices.length-2];
   return{ticker,name:profile.name||ticker,prices,cur,prev,change:((cur-prev)/prev)*100,high52:quote['52WeekHigh']||Math.max(...prices),low52:quote['52WeekLow']||Math.min(...prices),marketCap:profile.marketCapitalization?(profile.marketCapitalization*1e6).toFixed(0):null,avgVol:Math.round(vols.slice(-20).reduce((a,b)=>a+b,0)/20),news,isDemo:false};
 }
