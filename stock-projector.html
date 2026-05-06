@@ -113,11 +113,11 @@
     <button class="modal-close" onclick="closeModal()">✕</button>
     <h2>Connect Live Data</h2>
     <p class="modal-desc">Enter your free API keys to switch from simulated to real market data. Keys are held in memory only — never stored or sent anywhere.<br><br>
-    Get free keys: <a href="https://www.alphavantage.co/support/#api-key" target="_blank">Alpha Vantage</a> · <a href="https://finnhub.io/register" target="_blank">Finnhub</a> · <a href="https://newsapi.org/register" target="_blank">NewsAPI</a></p>
-    <div class="warning">⚠ NewsAPI blocks browser requests on hosted sites (free tier limitation). News works locally but may not load on GitHub Pages.</div>
+    Get free keys: <a href="https://www.alphavantage.co/support/#api-key" target="_blank">Alpha Vantage</a> · <a href="https://finnhub.io/register" target="_blank">Finnhub</a> · <a href="https://gnews.io/register" target="_blank">GNews</a></p>
+    
     <div class="field"><label>Alpha Vantage Key *</label><input type="password" id="key-av" placeholder="Your Alpha Vantage key"/></div>
     <div class="field"><label>Finnhub Key *</label><input type="password" id="key-fh" placeholder="Your Finnhub key"/></div>
-    <div class="field"><label>NewsAPI Key (optional)</label><input type="password" id="key-news" placeholder="Your NewsAPI key"/></div>
+    <div class="field"><label>GNews Key (optional)</label><input type="password" id="key-news" placeholder="Your GNews key"/></div>
     <div class="modal-actions">
       <button class="btn-activate" onclick="activateLive()">Activate Live Mode</button>
       <button class="btn-use-demo" onclick="activateDemo()">Use Demo</button>
@@ -194,7 +194,7 @@ async function fetchFH(ticker){
   return{quote:await qr.json(),profile:await pr.json()};
 }
 async function fetchNews(ticker,name){
-  const r=await fetch(`https://newsapi.org/v2/everything?q=${encodeURIComponent(ticker+' '+name+' stock')}&sortBy=publishedAt&pageSize=8&language=en&apiKey=${keys.news}`);
+  const r=await fetch(`https://gnews.io/api/v4/search?q=${encodeURIComponent(ticker+' '+name)}&lang=en&max=8&apikey=${keys.news}`);
   const d=await r.json();
   return(d.articles||[]).map(a=>({title:a.title,source:a.source?.name||'News',date:a.publishedAt?.slice(0,10)||'',sentiment:sentOf((a.title||'')+(a.description||''))}));
 }
