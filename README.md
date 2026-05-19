@@ -10,7 +10,7 @@ Data Analytics & Information Systems graduate from the University of Cincinnati.
 |---|---|---|
 | Stock Projector App | React, Alpha Vantage API, Finnhub, Sentiment Analysis | [Repo](#) |
 | Baseball Statistics Analyzer | Python, pybaseball, MLB Stats API | [Repo](#) |
-| Airline Passenger Dashboard | Tableau | [Tableau Public](#) |
+| Fantasy Football Analyzer | R | [RShiny](#) |
 
 ## Tech Stack
 
