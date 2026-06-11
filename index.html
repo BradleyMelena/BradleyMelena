@@ -4,99 +4,356 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Bradley Melena — Data Analytics</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #0d0f12; --surface: #13161b; --card: #111520; --border: #1e2330; --border2: #252d45;
-  --accent: #4f8ef7; --accent2: #7dd3fc; --text: #e8eaf0; --muted: #7a8099;
+  --black: #000000;
+  --dark: #1c1c1c;
+  --darker: #121212;
+  --white: #ffffff;
+  --off-white: #e8e8e8;
+  --border: #d7d6d5;
+  --muted: #535353;
+  --red: #cc1517;
+  --red-light: #dd3c3e;
 }
 html { scroll-behavior: smooth; }
-body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 300; line-height: 1.65; overflow-x: hidden; }
-body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(ellipse 60% 40% at 70% 20%, rgba(79,142,247,0.07) 0%, transparent 60%), radial-gradient(ellipse 40% 30% at 20% 80%, rgba(125,211,252,0.04) 0%, transparent 60%); pointer-events: none; z-index: 0; }
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  line-height: 1.4;
+  overflow-x: hidden;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
 
 /* NAV */
-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 3rem; background: rgba(13,15,18,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
-.nav-logo { font-family: 'DM Mono', monospace; font-size: 0.85rem; color: var(--accent); letter-spacing: 0.08em; text-decoration: none; }
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem 3rem;
+  background: var(--black);
+  border-bottom: 1px solid var(--dark);
+}
+.nav-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.5rem;
+  color: var(--white);
+  letter-spacing: 0.08em;
+  text-decoration: none;
+}
 .nav-links { display: flex; gap: 2.5rem; list-style: none; }
-.nav-links a { color: var(--muted); text-decoration: none; font-size: 0.85rem; letter-spacing: 0.05em; transition: color 0.2s; }
-.nav-links a:hover { color: var(--text); }
+.nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  transition: color 0.3s ease-in-out;
+}
+.nav-links a:hover { color: var(--white); }
 
 /* HERO */
-#hero { min-height: 100vh; display: flex; align-items: center; padding: 8rem 3rem 4rem; position: relative; overflow: hidden; }
-.hero-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(79,142,247,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(79,142,247,0.04) 1px, transparent 1px); background-size: 60px 60px; mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 100%); }
-.hero-glow { position: absolute; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, rgba(79,142,247,0.12) 0%, transparent 70%); top: -100px; right: -100px; pointer-events: none; }
-.hero-content { position: relative; max-width: 820px; }
-.hero-label { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 0.6s 0.1s forwards; }
-h1 { font-family: 'DM Serif Display', serif; font-size: clamp(3rem, 7vw, 5.5rem); line-height: 1.05; letter-spacing: -0.02em; margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 0.7s 0.2s forwards; }
-h1 em { font-style: italic; color: var(--accent2); }
-.hero-sub { font-size: 1.1rem; color: var(--muted); max-width: 520px; margin-bottom: 2.5rem; opacity: 0; animation: fadeUp 0.7s 0.35s forwards; }
-.hero-ctas { display: flex; gap: 1rem; flex-wrap: wrap; opacity: 0; animation: fadeUp 0.7s 0.5s forwards; }
-.btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.75rem; border-radius: 4px; font-size: 0.875rem; font-weight: 500; letter-spacing: 0.03em; cursor: pointer; text-decoration: none; transition: all 0.2s; }
-.btn-primary { background: var(--accent); color: #fff; border: 1px solid var(--accent); }
-.btn-primary:hover { background: var(--accent2); border-color: var(--accent2); transform: translateY(-1px); }
-.btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
-.btn-ghost:hover { color: var(--text); border-color: var(--muted); transform: translateY(-1px); }
+#hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-end;
+  padding: 8rem 3rem 5rem;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--dark);
+  background: url('stadium.webp') center center / cover no-repeat;
+}
+#hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.35) 100%);
+  z-index: 0;
+}
+#hero .hero-content { position: relative; z-index: 1; }
+.hero-content { position: relative; width: 100%; }
+.hero-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.15em;
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  animation: fadeUp 0.6s 0.1s forwards;
+}
+h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(5rem, 14vw, 13rem);
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: fadeUp 0.7s 0.2s forwards;
+}
+h1 span { color: var(--red); }
+.hero-sub {
+  font-size: 0.875rem;
+  color: var(--muted);
+  max-width: 480px;
+  margin-bottom: 3rem;
+  line-height: 1.7;
+  opacity: 0;
+  animation: fadeUp 0.7s 0.35s forwards;
+}
+.hero-ctas {
+  display: flex; gap: 0; flex-wrap: wrap;
+  opacity: 0;
+  animation: fadeUp 0.7s 0.5s forwards;
+}
+.btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.9rem 2rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.3s, color 0.3s, transform 0.3s;
+  border-radius: 0;
+}
+.btn-primary {
+  background: var(--white);
+  color: var(--black);
+  border: 1px solid var(--white);
+}
+.btn-primary:hover { background: var(--off-white); border-color: var(--off-white); }
+.btn-ghost {
+  background: transparent;
+  color: var(--white);
+  border: 1px solid var(--white);
+  margin-left: -1px;
+}
+.btn-ghost:hover { background: var(--white); color: var(--black); }
+.btn-red {
+  background: var(--red);
+  color: var(--white);
+  border: 1px solid var(--red);
+  margin-left: -1px;
+}
+.btn-red:hover { background: var(--red-light); border-color: var(--red-light); }
+
+/* DIVIDER */
+.full-divider { border: none; border-top: 1px solid var(--dark); margin: 0; }
 
 /* SECTIONS */
 section { padding: 6rem 3rem; max-width: 1100px; margin: 0 auto; }
-.section-label { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.75rem; }
-h2 { font-family: 'DM Serif Display', serif; font-size: clamp(1.8rem, 3.5vw, 2.75rem); letter-spacing: -0.02em; margin-bottom: 3rem; line-height: 1.15; }
-.full-divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+section.full-width { max-width: 100%; }
+.section-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.15em;
+  margin-bottom: 0.75rem;
+}
+h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(3rem, 6vw, 5.5rem);
+  letter-spacing: 0.02em;
+  line-height: 0.9;
+  margin-bottom: 3.5rem;
+}
 
 /* ABOUT */
 .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
-.about-text p { color: var(--muted); margin-bottom: 1.25rem; font-size: 0.975rem; }
-.about-text p strong { color: var(--text); font-weight: 500; }
-.skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-.skill-group h4 { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.6rem; }
-.skill-group p { font-size: 0.85rem; color: var(--muted); line-height: 1.7; }
+.about-text p {
+  color: var(--muted);
+  margin-bottom: 1.25rem;
+  font-size: 0.875rem;
+  line-height: 1.8;
+  letter-spacing: 0.04em;
+}
+.about-text p strong { color: var(--white); font-weight: 500; }
+.skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--dark); }
+.skill-group {
+  padding: 1.5rem;
+  border-right: 1px solid var(--dark);
+  border-bottom: 1px solid var(--dark);
+}
+.skill-group:nth-child(even) { border-right: none; }
+.skill-group:nth-last-child(-n+2) { border-bottom: none; }
+.skill-group h4 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  color: var(--red);
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+.skill-group p { font-size: 0.75rem; color: var(--muted); line-height: 1.9; }
 
 /* PROJECTS */
-.projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
-.project-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 2rem; position: relative; overflow: hidden; transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s; }
-.project-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0; transition: opacity 0.3s; }
-.project-card:hover { transform: translateY(-4px); border-color: rgba(79,142,247,0.3); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
-.project-card:hover::before { opacity: 1; }
-.project-num { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--accent); letter-spacing: 0.1em; margin-bottom: 1rem; }
-.project-card h3 { font-family: 'DM Serif Display', serif; font-size: 1.3rem; margin-bottom: 0.75rem; line-height: 1.2; }
-.project-card p { font-size: 0.875rem; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.65; }
-.tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.5rem; }
-.tag { background: #1a2235; border: 1px solid var(--border); color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.68rem; padding: 0.2rem 0.6rem; border-radius: 3px; letter-spacing: 0.05em; }
-.project-link { font-size: 0.8rem; color: var(--accent); text-decoration: none; font-family: 'DM Mono', monospace; letter-spacing: 0.05em; display: inline-flex; align-items: center; gap: 0.4rem; transition: gap 0.2s; }
-.project-link:hover { gap: 0.7rem; }
+.projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0; border: 1px solid var(--dark); }
+.project-card {
+  background: var(--black);
+  border-right: 1px solid var(--dark);
+  padding: 2.5rem 2rem;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s;
+}
+.project-card:last-child { border-right: none; }
+.project-card:hover { background: var(--darker); }
+.project-card::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--red);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease-in-out;
+}
+.project-card:hover::after { transform: scaleX(1); }
+.project-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+}
+.project-card h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.8rem;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  margin-bottom: 1rem;
+  color: var(--white);
+}
+.project-card p {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-bottom: 1.5rem;
+  line-height: 1.8;
+  letter-spacing: 0.04em;
+}
+.tags { display: flex; flex-wrap: wrap; gap: 0; margin-bottom: 2rem; }
+.tag {
+  background: var(--dark);
+  border: 1px solid var(--dark);
+  color: var(--muted);
+  font-size: 0.6rem;
+  padding: 0.3rem 0.75rem;
+  letter-spacing: 0.08em;
+  margin-right: -1px;
+  margin-bottom: -1px;
+}
+.project-link {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--white);
+  text-decoration: none;
+  letter-spacing: 0.08em;
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  border-bottom: 1px solid var(--white);
+  padding-bottom: 0.15rem;
+  transition: color 0.3s, border-color 0.3s;
+}
+.project-link:hover { color: var(--red); border-color: var(--red); }
 
 /* EXPERIENCE */
-.exp-list { display: flex; flex-direction: column; }
-.exp-item { display: grid; grid-template-columns: 160px 1fr; gap: 2rem; padding: 2rem 0; border-bottom: 1px solid var(--border); }
+.exp-list { display: flex; flex-direction: column; border: 1px solid var(--dark); }
+.exp-item {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 2rem;
+  padding: 2.5rem;
+  border-bottom: 1px solid var(--dark);
+  transition: background 0.3s;
+}
 .exp-item:last-child { border-bottom: none; }
-.exp-date { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--muted); letter-spacing: 0.05em; padding-top: 0.2rem; }
-.exp-role { font-weight: 500; font-size: 1rem; margin-bottom: 0.2rem; }
-.exp-company { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--accent); margin-bottom: 0.75rem; letter-spacing: 0.05em; }
-.exp-desc { font-size: 0.875rem; color: var(--muted); line-height: 1.65; }
+.exp-item:hover { background: var(--darker); }
+.exp-date {
+  font-size: 0.6875rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  padding-top: 0.2rem;
+}
+.exp-role {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  margin-bottom: 0.4rem;
+}
+.exp-company {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--red);
+  margin-bottom: 1rem;
+  letter-spacing: 0.08em;
+}
+.exp-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.8; }
 
 /* CONTACT */
-#contact { text-align: center; padding: 8rem 3rem; }
-#contact h2 { margin-bottom: 1rem; }
-#contact p { color: var(--muted); margin-bottom: 2.5rem; max-width: 420px; margin-left: auto; margin-right: auto; }
-.contact-links { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+#contact { text-align: center; padding: 8rem 3rem; border-top: 1px solid var(--dark); max-width: 100%; }
+#contact h2 { margin-bottom: 1rem; font-size: clamp(4rem, 10vw, 9rem); }
+#contact p { color: var(--muted); margin-bottom: 2.5rem; max-width: 420px; margin-left: auto; margin-right: auto; font-size: 0.875rem; line-height: 1.8; }
+.contact-links { display: flex; gap: 0; justify-content: center; flex-wrap: wrap; }
 
 /* FOOTER */
-footer { border-top: 1px solid var(--border); padding: 2rem 3rem; display: flex; justify-content: space-between; align-items: center; }
-footer p { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--muted); letter-spacing: 0.05em; }
+footer {
+  border-top: 1px solid var(--dark);
+  padding: 2rem 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--black);
+}
+footer p { font-size: 0.6875rem; color: var(--muted); letter-spacing: 0.08em; }
+
+/* TICKER STRIP */
+.ticker-wrap {
+  background: var(--red);
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--red-light);
+  border-bottom: 1px solid var(--red-light);
+}
+.ticker-track {
+  display: inline-flex;
+  animation: ticker 20s linear infinite;
+}
+.ticker-item {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  color: var(--white);
+  padding: 0 2rem;
+}
+.ticker-sep { color: rgba(255,255,255,0.4); }
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
 
 /* ANIMATIONS */
 @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s, transform 0.6s; }
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out; }
 .reveal.visible { opacity: 1; transform: none; }
 
+/* MOBILE */
 @media (max-width: 768px) {
   nav { padding: 1rem 1.5rem; }
   .nav-links { gap: 1.5rem; }
   section { padding: 4rem 1.5rem; }
-  #hero { padding: 7rem 1.5rem 3rem; }
+  #hero { padding: 7rem 1.5rem 3rem; align-items: flex-start; }
   .about-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+  .skills-grid { grid-template-columns: 1fr; }
+  .skill-group:nth-child(even) { border-right: 1px solid var(--dark); }
+  .projects-grid { grid-template-columns: 1fr; }
+  .project-card { border-right: none; border-bottom: 1px solid var(--dark); }
+  .project-card:last-child { border-bottom: none; }
   .exp-item { grid-template-columns: 1fr; gap: 0.5rem; }
+  .hero-ctas { flex-direction: column; width: fit-content; }
+  .btn { margin-left: 0 !important; margin-top: -1px; }
   footer { flex-direction: column; gap: 0.5rem; text-align: center; }
 }
 </style>
@@ -104,7 +361,7 @@ footer p { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--m
 <body>
 
 <nav>
-  <a class="nav-logo" href="#hero">BM_</a>
+  <a class="nav-logo" href="#hero">BM</a>
   <ul class="nav-links">
     <li><a href="#about">About</a></li>
     <li><a href="#projects">Projects</a></li>
@@ -113,31 +370,58 @@ footer p { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--m
   </ul>
 </nav>
 
-<section id="hero">
-  <div class="hero-grid"></div>
-  <div class="hero-glow"></div>
+<section id="hero" class="full-width" style="max-width:100%; padding: 8rem 3rem 5rem;">
   <div class="hero-content">
-    <p class="hero-label">// Bradley S. Melena</p>
-    <h1>Data Analytics<br><em>&amp; Information</em><br>Systems</h1>
-    <p class="hero-sub">Recent graduate from the University of Cincinnati building pipelines, dashboards, and data-driven applications.</p>
+    <p class="hero-label">Bradley S. Melena &mdash; Data Analytics</p>
+    <h1>Data<br><span>Analytics</span><br>&amp; Info<br>Systems</h1>
+    <p class="hero-sub">Recent UC graduate focused on data pipelines, dashboards, and analytics tools.</p>
     <div class="hero-ctas">
-      <a href="#projects" class="btn btn-primary">View Projects →</a>
+      <a href="#projects" class="btn btn-primary">View Projects &rarr;</a>
       <a href="Bradley_Melena_Resume_May_2026.docx" class="btn btn-ghost" download>Download Resume</a>
-      <a href="https://www.linkedin.com/in/bradley-melena-2734a9267/" target="_blank" class="btn btn-ghost">LinkedIn</a>
+      <a href="https://www.linkedin.com/in/bradley-melena-2734a9267/" target="_blank" class="btn btn-red">LinkedIn</a>
     </div>
   </div>
 </section>
 
+<div class="ticker-wrap">
+  <div class="ticker-track">
+    <span class="ticker-item">Data Analytics</span><span class="ticker-item ticker-sep">&mdash;</span>
+    <span class="ticker-item">Data Engineering</span><span class="ticker-item ticker-sep">&mdash;</span>
+    <span class="ticker-item">Sports Analytics</span><span class="ticker-item ticker-sep">&mdash;</span>
+    <span class="ticker-item">Python &middot; R &middot; SQL</span><span class="ticker-item ticker-sep">&mdash;</span>
+    <span class="ticker-item">Palantir Certified</span><span class="ticker-item ticker-sep">&mdash;</span>
+    <span class="ticker-item">ETL Pipelines</span><span class="ticker-item ticker-sep">&mdash;</span>
+    <span class="ticker-item">Dashboard Design</span><span class="ticker-item ticker-sep">&mdash;</span>
+    <span class="ticker-item">University of Cincinnati</span><span class="ticker-item ticker-sep">&mdash;</span>
+    <!-- duplicate for seamless loop -->
+    <span class="ticker-item">Data Analytics</span><span class="ticker-item ticker-sep">&mdash;</span>
+    <span class="ticker-item">Data Engineering</span><span class="ticker-item ticker-sep">&mdash;</span>
+    <span class="ticker-item">Sports Analytics</span><span class="ticker-item ticker-sep">&mdash;</span>
+    <span class="ticker-item">Python &middot; R &middot; SQL</span><span class="ticker-item ticker-sep">&mdash;</span>
+    <span class="ticker-item">Palantir Certified</span><span class="ticker-item ticker-sep">&mdash;</span>
+    <span class="ticker-item">ETL Pipelines</span><span class="ticker-item ticker-sep">&mdash;</span>
+    <span class="ticker-item">Dashboard Design</span><span class="ticker-item ticker-sep">&mdash;</span>
+    <span class="ticker-item">University of Cincinnati</span><span class="ticker-item ticker-sep">&mdash;</span>
+  </div>
+</div>
+
+<hr class="full-divider"/>
+
+<!-- LINDNER BUILDING IMAGE BREAK -->
+<div style="width:100%; height:50vh; overflow:hidden; position:relative;">
+  <img src="lindner.jpeg" alt="Lindner College of Business" style="width:100%; height:100%; object-fit:cover; object-position:center 60%; display:block; filter:brightness(0.75);"/>
+</div>
+
 <hr class="full-divider"/>
 
 <section id="about">
-  <p class="section-label reveal">// 01 — About</p>
+  <p class="section-label reveal">01 &mdash; About</p>
   <h2 class="reveal">Building things<br>with data.</h2>
   <div class="about-grid">
     <div class="about-text reveal">
-      <p>I'm a <strong>Business Analytics & Information Systems</strong> graduate from UC's Carl H. Lindner College of Business. I work at the intersection of data engineering and analytics — building the pipelines and tools that make good insights actually possible.</p>
-      <p>My hands-on experience spans <strong>end-to-end data pipelines</strong>, interactive dashboards, predictive modeling, and full-stack applications. Certified in <strong>Palantir Foundry & API Builder</strong> and the Global Career Accelerator data track.</p>
-      <p>Currently targeting roles in <strong>data analytics, data engineering, and sports analytics</strong>.</p>
+      <p>I graduated from UC's Lindner College of Business with a degrees in <strong>Business Analytics &amp; Information Systems</strong>. I am passionate about data engineering and analytics, building pipelines and tools that turn raw data into something people can actually use.</p>
+      <p>I've built pipelines end-to-end, shipped dashboards, and done predictive modeling. Certified in <strong>Palantir Foundry &amp; API Builder</strong> and the Global Career Accelerator data track.</p>
+      <p>Actively seeking full-time roles in <strong>data analytics, data engineering, or sports analytics</strong>.</p>
     </div>
     <div class="skills-grid reveal">
       <div class="skill-group"><h4>Languages</h4><p>Python · R · SQL · Rust · JavaScript</p></div>
@@ -150,84 +434,91 @@ footer p { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--m
 
 <hr class="full-divider"/>
 
-<section id="projects">
-  <p class="section-label reveal">// 02 — Projects</p>
-  <h2 class="reveal">Selected work.</h2>
-  <div class="projects-grid">
+<section id="projects" style="max-width:100%; padding: 6rem 3rem;">
+  <div style="max-width:1100px; margin:0 auto;">
+    <p class="section-label reveal">02 &mdash; Projects</p>
+    <h2 class="reveal">Selected work.</h2>
+  </div>
+  <div class="projects-grid reveal" style="max-width:1100px; margin:0 auto;">
 
-    <div class="project-card reveal">
-      <p class="project-num">01 —</p>
+    <div class="project-card">
+      <p class="project-num">01 &mdash;</p>
       <h3>2026 Fantasy Football Draft Tool</h3>
-      <p>Full R Shiny application with PPR projections, ADP value modeling, 2026 rookie class analysis, and live ESPN injury data. Features tier charts, a sortable draft board, player lookup, and value score rankings across 100+ players.</p>
+      <p>Built in R Shiny. Pulls live ESPN injury data, models PPR projections and ADP value, and covers the full 2026 rookie class. Includes tier charts, a sortable draft board, and value rankings across 100+ players.</p>
       <div class="tags">
         <span class="tag">R Shiny</span>
         <span class="tag">ffanalytics</span>
         <span class="tag">ESPN API</span>
         <span class="tag">Predictive Modeling</span>
       </div>
-      <a href="https://bradleymelena.shinyapps.io/ff-cheatsheet/" target="_blank" class="project-link">View Live App →</a>
+      <a href="https://bradleymelena.shinyapps.io/ff-cheatsheet/" target="_blank" class="project-link">View Live App &rarr;</a>
     </div>
 
-    <div class="project-card reveal">
-      <p class="project-num">02 —</p>
+    <div class="project-card">
+      <p class="project-num">02 &mdash;</p>
       <h3>Stock Projector Application</h3>
-      <p>Standalone web app integrating Alpha Vantage & Finnhub APIs with live news sentiment analysis, RSI/SMA technical indicators, analyst opinion aggregation, and multi-horizon price projections. Demo and live API modes.</p>
+      <p>Pulls live data from Alpha Vantage and Finnhub, runs sentiment analysis on recent news, and layers in RSI and SMA indicators alongside analyst consensus. Includes a demo mode that runs on sample data.</p>
       <div class="tags">
         <span class="tag">JavaScript</span>
         <span class="tag">REST APIs</span>
         <span class="tag">Sentiment Analysis</span>
         <span class="tag">Technical Analysis</span>
       </div>
-      <a href="https://bradleymelena.github.io/BradleyMelena/stock-projector.html" target="_blank" class="project-link">View Live App →</a>
+      <a href="https://bradleymelena.github.io/BradleyMelena/stock-projector.html" target="_blank" class="project-link">View Live App &rarr;</a>
     </div>
 
-    <div class="project-card reveal">
-      <p class="project-num">03 —</p>
+    <div class="project-card">
+      <p class="project-num">03 &mdash;</p>
       <h3>Baseball Statistics Analyzer</h3>
-      <p>Python CLI tool pulling live MLB data via pybaseball and the MLB Stats API. Surfaces advanced analytics including WAR, wRC+, and Statcast pitch metrics with comprehensive unit test coverage.</p>
+      <p>Python CLI that pulls live MLB data through pybaseball and the MLB Stats API. Returns advanced metrics including WAR, wRC+, and Statcast pitch data. Fully unit tested.</p>
       <div class="tags">
         <span class="tag">Python</span>
         <span class="tag">pybaseball</span>
         <span class="tag">MLB Stats API</span>
         <span class="tag">Unit Testing</span>
       </div>
-      <a href="https://github.com/BradleyMelena/baseball-analyzer" target="_blank" class="project-link">View on GitHub →</a>
+      <a href="https://github.com/BradleyMelena/baseball-analyzer" target="_blank" class="project-link">View on GitHub &rarr;</a>
     </div>
 
   </div>
 </section>
+
+<hr class="full-divider"/>
+
+<!-- CAMPUS AERIAL IMAGE BREAK -->
+<div style="width:100%; height:50vh; overflow:hidden; position:relative;">
+  <img src="campus.jpg" alt="University of Cincinnati campus" style="width:100%; height:100%; object-fit:cover; object-position:center 40%; display:block; filter:brightness(0.75);"/>
+</div>
 
 <hr class="full-divider"/>
 
 <section id="experience">
-  <p class="section-label reveal">// 03 — Experience</p>
+  <p class="section-label reveal">03 &mdash; Experience</p>
   <h2 class="reveal">Where I've worked.</h2>
-  <div class="exp-list">
-    <div class="exp-item reveal">
+  <div class="exp-list reveal">
+    <div class="exp-item">
       <div class="exp-date">May – Aug 2025</div>
       <div>
         <p class="exp-role">Data Analytics Intern</p>
-        <p class="exp-company">Ladders Unlimited and Supply · Cincinnati, OH</p>
-        <p class="exp-desc">Designed a Python + ODBC + Supabase data pipeline replacing a manual reporting process. Built an R Shiny dashboard enabling leadership to self-serve analytics. Evaluated Airbyte, Databricks, and Snowflake to inform future architecture decisions.</p>
+        <p class="exp-company">Ladders Unlimited and Supply &middot; Cincinnati, OH</p>
+        <p class="exp-desc">Built a Python + ODBC + Supabase pipeline to replace a manual spreadsheet reporting process. Delivered an R Shiny dashboard enabling leadership to run their own reports. Evaluated Airbyte, Databricks, and Snowflake to inform a future stack decision.</p>
       </div>
     </div>
-    <div class="exp-item reveal">
+    <div class="exp-item">
       <div class="exp-date">May – Aug 2024</div>
       <div>
-        <p class="exp-role">Foreclosure & Mortgage Intern</p>
-        <p class="exp-company">Sandhu Law Firm · Cleveland, OH</p>
-        <p class="exp-desc">Managed legal documents and digital mail distribution. Monitored foreclosure inbox and communicated court updates to clients. Collaborated with legal staff on active case preparation.</p>
+        <p class="exp-role">Foreclosure &amp; Mortgage Intern</p>
+        <p class="exp-company">Sandhu Law Firm &middot; Cleveland, OH</p>
+        <p class="exp-desc">Handled document management and digital mail for an active foreclosure caseload. Kept clients updated on court status and helped attorneys prep for hearings.</p>
       </div>
     </div>
   </div>
 </section>
 
-<hr class="full-divider"/>
-
-<section id="contact">
-  <p class="section-label reveal">// 04 — Contact</p>
-  <h2 class="reveal">Let's connect.</h2>
-  <p class="reveal">Open to full-time roles in data analytics, data engineering, and sports analytics.</p>
+<section id="contact" class="full-width">
+  <p class="section-label reveal">04 &mdash; Contact</p>
+  <h2 class="reveal">Let's<br><span style="color:var(--red);">connect.</span></h2>
+  <p class="reveal">Actively seeking full-time roles in data analytics, data engineering, or sports analytics.</p>
   <div class="contact-links reveal">
     <a href="mailto:bmelena42@gmail.com" class="btn btn-primary">bmelena42@gmail.com</a>
     <a href="https://www.linkedin.com/in/bradley-melena-2734a9267/" target="_blank" class="btn btn-ghost">LinkedIn</a>
@@ -236,8 +527,7 @@ footer p { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--m
 </section>
 
 <footer>
-  <p>© 2026 Bradley S. Melena</p>
-  <p>Built with HTML · Hosted on GitHub Pages</p>
+  <p>&copy; 2026 Bradley S. Melena</p>
 </footer>
 
 <script>
