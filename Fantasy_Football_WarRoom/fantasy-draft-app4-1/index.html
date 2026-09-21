@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fantasy Draft War Room</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --bg:#0f1319; --panel:#171d26; --panel2:#1e2632; --border:#2a3444;
+  --text:#e8edf4; --muted:#8fa0b5; --accent:#4da3ff; --green:#3ddc84;
+  --red:#ff6b6b; --gold:#ffc857;
+}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text)}
+header{display:flex;align-items:center;gap:16px;padding:10px 18px;background:var(--panel);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+header h1{font-size:17px;margin:0;white-space:nowrap}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav button{background:none;border:1px solid transparent;color:var(--muted);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:14px}
+nav button.active{background:var(--panel2);color:var(--text);border-color:var(--border)}
+nav button:hover{color:var(--text)}
+#statusChip{margin-left:auto;font-size:12px;color:var(--muted);white-space:nowrap}
+main{padding:18px;max-width:1250px;margin:0 auto}
+.tab{display:none}.tab.active{display:block}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px}
+.card h2{margin:0 0 12px;font-size:15px}
+.card h3{margin:14px 0 8px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+input,select,textarea{width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 10px;font-size:14px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+.row{display:flex;gap:12px;flex-wrap:wrap}.row>*{flex:1;min-width:160px}
+button.btn{background:var(--accent);border:none;color:#04121f;font-weight:600;padding:9px 16px;border-radius:8px;cursor:pointer;font-size:14px}
+button.btn:hover{filter:brightness(1.1)}
+button.btn.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--border)}
+button.btn.danger{background:var(--red);color:#fff}
+button.btn:disabled{opacity:.5;cursor:default}
+button.mini{background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:3px 9px;border-radius:6px;cursor:pointer;font-size:12px}
+button.mini:hover{border-color:var(--accent)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{color:var(--muted);text-align:left;font-weight:600;padding:6px 8px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--panel)}
+td{padding:5px 8px;border-bottom:1px solid #202938}
+tr:hover td{background:var(--panel2)}
+.pos{display:inline-block;min-width:32px;text-align:center;font-size:11px;font-weight:700;border-radius:5px;padding:2px 4px}
+.pos-QB{background:#7c3aed33;color:#c4b5fd}.pos-RB{background:#05966933;color:#6ee7b7}
+.pos-WR{background:#2563eb33;color:#93c5fd}.pos-TE{background:#d9770633;color:#fcd34d}
+.pos-K{background:#64748b33;color:#cbd5e1}.pos-DEF{background:#dc262633;color:#fca5a5}
+.ok{color:var(--green)}.warn{color:var(--gold)}.err{color:var(--red)}
+.muted{color:var(--muted)}
+.pill{display:inline-block;background:var(--panel2);border:1px solid var(--border);border-radius:999px;padding:2px 10px;font-size:12px;margin:2px 4px 2px 0}
+.scroll{max-height:520px;overflow:auto;border:1px solid var(--border);border-radius:8px}
+.grid2{display:grid;grid-template-columns:1fr 380px;gap:16px}
+@media(max-width:980px){.grid2{grid-template-columns:1fr}}
+#claudeOut{white-space:pre-wrap;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:13px;max-height:420px;overflow:auto}
+.onclock{background:#4da3ff1a;border:1px solid var(--accent);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:15px}
+.flash{animation:flash 1s ease}
+@keyframes flash{0%{background:#3ddc8440}100%{background:transparent}}
+small.hint{color:var(--muted);display:block;margin-top:4px;font-size:11px}
+.msg{max-width:85%;margin:8px 0;padding:10px 13px;border-radius:12px;white-space:pre-wrap;font-size:13px}
+.msg.user{background:#4da3ff26;border:1px solid #4da3ff55;margin-left:auto}
+.msg.ai{background:var(--panel2);border:1px solid var(--border)}
+.msg .who{font-size:11px;color:var(--muted);margin-bottom:4px}
+.kv{display:flex;justify-content:space-between;padding:3px 0;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏈 Draft War Room</h1>
+  <nav>
+    <button data-tab="setup" class="active">Setup</button>
+    <button data-tab="rankings">Rankings</button>
+    <button data-tab="keepers">Keepers</button>
+    <button data-tab="chat">Chat</button>
+    <button data-tab="draft">Live Draft</button>
+  </nav>
+  <span id="statusChip"></span>
+</header>
+<main>
+
+<!-- ============ SETUP ============ -->
+<section class="tab active" id="tab-setup">
+  <div class="row">
+    <div class="card" style="flex:1;min-width:320px">
+      <h2>ESPN League</h2>
+      <label>League ID</label><input id="leagueId" placeholder="e.g. 123456">
+      <small class="hint">In your league URL: fantasy.espn.com/football/league?leagueId=<b>123456</b></small>
+      <div class="row">
+        <div><label>Season</label><input id="season" value="2026"></div>
+      </div>
+      <label>SWID cookie</label><input id="swid" placeholder="{XXXXXXXX-XXXX-...}">
+      <label>espn_s2 cookie</label><input id="s2" placeholder="AEB...">
+      <small class="hint">Needed for private leagues. Log into espn.com → open DevTools (⌥⌘I) → Application → Cookies → espn.com → copy SWID and espn_s2 values.</small>
+      <div style="margin-top:12px"><button class="btn" onclick="connectESPN()">Connect to ESPN</button></div>
+      <div id="espnStatus" style="margin-top:10px"></div>
+      <div id="teamPickWrap" style="display:none">
+        <label>Which team is yours?</label>
+        <select id="myTeam" onchange="S.settings.myTeamId=+this.value;save();chip()"></select>
+      </div>
+    </div>
+    <div class="card" style="flex:1;min-width:320px">
+      <h2>Claude API</h2>
+      <label>Anthropic API key</label><input id="apiKey" type="password" placeholder="sk-ant-...">
+      <small class="hint">Get one at console.anthropic.com → API Keys. Stored only in your browser + sent only to api.anthropic.com.</small>
+      <label>Model</label>
+      <select id="model">
+        <option value="claude-sonnet-5">Claude Sonnet 5 (recommended)</option>
+        <option value="claude-opus-5">Claude Opus 5 (deepest analysis)</option>
+        <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (fastest)</option>
+      </select>
+      <div style="margin-top:12px"><button class="btn secondary" onclick="testClaude()">Test key</button></div>
+      <div id="claudeStatus" style="margin-top:10px"></div>
+      <h3>League format</h3>
+      <div class="row">
+        <div><label>Teams</label><input id="teamsCount" value="10"></div>
+        <div><label>Rounds</label><input id="rounds" value="16"></div>
+        <div><label>Scoring</label><select id="scoring"><option>PPR</option><option>Half-PPR</option><option>Standard</option></select></div>
+      </div>
+      <h3>Data</h3>
+      <button class="btn danger" onclick="if(confirm('Clear all saved data?')){localStorage.removeItem(LS);location.reload()}">Reset everything</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RANKINGS ============ -->
+<section class="tab" id="tab-rankings">
+  <div class="card">
+    <h2>Load rankings sources</h2>
+    <div class="row">
+      <div>
+        <button class="btn" onclick="loadESPNRanks()">Fetch ESPN ranks + ADP</button>
+        <div id="srcEspn" class="muted" style="margin-top:6px">not loaded</div>
+      </div>
+      <div>
+        <label>Upload CSV rankings</label>
+        <select id="csvSource">
+          <option value="fantasypros">FantasyPros</option>
+          <option value="pff">PFF</option>
+          <option value="underdog">Underdog</option>
+        </select>
+        <input type="file" id="csvFile" accept=".csv,.tsv,.txt" style="margin-top:6px" onchange="handleCSV(this)">
+        <small class="hint">Needs a player-name column; rank column used if found, otherwise row order = rank. PFF exports and FantasyPros downloads work as-is.</small>
+        <div id="srcCsv" class="muted" style="margin-top:6px">
+          FantasyPros: <span id="cntFantasypros">0</span> · PFF: <span id="cntPff">0</span> · Underdog: <span id="cntUnderdog">0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Consensus board <span class="muted" id="poolCount"></span></h2>
+    <div class="row" style="margin-bottom:10px">
+      <input id="rkSearch" placeholder="Search player…" oninput="renderRankings()" style="max-width:220px">
+      <select id="rkPos" onchange="renderRankings()" style="max-width:140px">
+        <option value="">All positions</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option><option>K</option><option>DEF</option>
+      </select>
+    </div>
+    <div class="scroll"><table id="rkTable"></table></div>
+  </div>
+</section>
+
+<!-- ============ KEEPERS ============ -->
+<section class="tab" id="tab-keepers">
+  <div class="card">
+    <h2>Keepers</h2>
+    <p class="muted">Enter every team's keepers (including yours). They're removed from the available pool and their round pick is skipped automatically during the draft.</p>
+    <div class="row" style="align-items:flex-end">
+      <div><label>Team</label><select id="kTeam"></select></div>
+      <div style="flex:2"><label>Player</label><input id="kPlayer" list="playerList" placeholder="Start typing…"></div>
+      <div><label>Round cost</label><input id="kRound" placeholder="e.g. 7"></div>
+      <div style="flex:0"><button class="btn" onclick="addKeeper()">Add</button></div>
+    </div>
+    <datalist id="playerList"></datalist>
+    <div id="keeperList" style="margin-top:16px"></div>
+  </div>
+</section>
+
+<!-- ============ CHAT ============ -->
+<section class="tab" id="tab-chat">
+  <div class="card">
+    <h2>💬 Chat with Claude
+      <span class="muted" style="font-weight:400;font-size:12px">— it can see your league, every team's keepers, the rankings board, and the draft state</span>
+      <button class="mini" style="float:right" onclick="if(confirm('Clear chat history?')){S.chat=[];save();renderChat()}">Clear chat</button>
+    </h2>
+    <label style="display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:12px;color:var(--muted)">
+      <input type="checkbox" id="webSearch" checked style="width:auto"> allow web search (Claude looks up current news, injuries, depth charts — ~1¢/search, slower but much smarter)
+    </label>
+    <div id="chatLog" class="scroll" style="max-height:500px;padding:10px;margin-bottom:10px"></div>
+    <div class="row" style="align-items:flex-end">
+      <textarea id="chatInput" rows="2" placeholder="e.g. Everyone's keepers are in — who should I keep and why?"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
+      <div style="flex:0"><button class="btn" id="chatBtn" onclick="sendChat()">Send</button></div>
+    </div>
+    <small class="hint">Enter to send · Shift+Enter for a new line. Keep entering other teams' keepers on the Keepers tab — Claude always sees the latest.</small>
+  </div>
+</section>
+
+<!-- ============ DRAFT ============ -->
+<section class="tab" id="tab-draft">
+  <div class="onclock" id="onClock">Connect your league and load rankings to begin.</div>
+  <div class="card">
+    <h2>Draft order <span class="muted" style="font-weight:400;font-size:12px">(round 1 shown — snake reverses each even round; ▲▼ to reorder)</span></h2>
+    <div id="orderList" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+    <div class="row" style="margin-top:10px;align-items:center">
+      <div style="flex:0;white-space:nowrap"><button class="mini" onclick="connectESPN().then(renderDraft)">Reset to ESPN order</button></div>
+      <div style="flex:0;white-space:nowrap"><button class="mini" onclick="createGenericTeams()">Create generic teams</button></div>
+      <div style="flex:1"></div>
+      <div style="flex:0;white-space:nowrap"><button class="btn secondary" id="mockBtn" onclick="toggleMock()">▶ Start mock draft</button></div>
+      <div style="flex:0;white-space:nowrap"><span id="mockStatus" class="muted"></span></div>
+    </div>
+  </div>
+  <div class="card" style="padding:10px 16px">
+    <div class="row" style="align-items:center">
+      <div style="flex:0;white-space:nowrap">
+        <button class="btn" id="pollBtn" onclick="togglePoll()">▶ Start ESPN live sync</button>
+      </div>
+      <div style="flex:0;white-space:nowrap"><span id="pollStatus" class="muted"></span></div>
+      <div style="flex:2"><input id="manualPick" list="playerList" placeholder="Manual: type player, press Enter to mark drafted" onkeydown="if(event.key==='Enter')manualDraft()"></div>
+      <div style="flex:0;white-space:nowrap"><button class="mini" onclick="undoPick()">Undo last</button></div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h2>Best available</h2>
+      <div class="row" style="margin-bottom:8px">
+        <select id="dPos" onchange="renderDraft()" style="max-width:130px">
+          <option value="">All</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option><option>K</option><option>DEF</option>
+        </select>
+        <input id="dSearch" placeholder="Search…" oninput="renderDraft()" style="max-width:200px">
+      </div>
+      <div class="scroll" style="max-height:560px"><table id="baTable"></table></div>
+    </div>
+    <div>
+      <div class="card">
+        <h2>🤖 Claude assistant</h2>
+        <label style="display:flex;align-items:center;gap:8px;margin:0 0 10px">
+          <input type="checkbox" id="autoAnalyze" style="width:auto"> auto-analyze when I'm on the clock
+        </label>
+        <button class="btn" id="askBtn" onclick="askClaude()">Analyze my pick now</button>
+        <div id="claudeOut" style="margin-top:10px">Recommendations will appear here.</div>
+      </div>
+      <div class="card">
+        <h2>My roster</h2>
+        <div id="myRoster" class="muted">—</div>
+        <h3>Recent picks</h3>
+        <div id="recentPicks" class="muted">—</div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<script>
+/* ============================== state ============================== */
+const LS='fdwr_v1';
+let S = load() || {
+  settings:{leagueId:'',season:'2026',swid:'',s2:'',apiKey:'',model:'claude-sonnet-5',
+            myTeamId:null,teamsCount:10,rounds:16,scoring:'PPR'},
+  leagueName:'', teams:[], pickOrder:[],
+  players:{},          // key -> {name,pos,team,espnId,adp,ranks:{sleeper,espn,underdog,pff}}
+  espnIdIndex:{},      // espnId -> key
+  keepers:[],          // {teamId,key,name,round}
+  picks:[]             // {overall,teamId,key,name,src}
+};
+let pollTimer=null, lastAnalyzedPick=-1, mockTimer=null;
+S.chat=S.chat||[];
+S.mock=S.mock||{active:false,picks:[]};
+function activePicks(){return S.mock.active?S.mock.picks:S.picks}
+function totalPicks(){return (S.pickOrder.length||+S.settings.teamsCount||10)*(+S.settings.rounds||16)}
+
+function save(){localStorage.setItem(LS,JSON.stringify(S));}
+function load(){try{return JSON.parse(localStorage.getItem(LS));}catch(e){return null}}
+function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+/* ============================== tabs ============================== */
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  document.getElementById('tab-'+b.dataset.tab).classList.add('active');
+  if(b.dataset.tab==='rankings')renderRankings();
+  if(b.dataset.tab==='keepers')renderKeepers();
+  if(b.dataset.tab==='chat')renderChat();
+  if(b.dataset.tab==='draft')renderDraft();
+});
+
+/* bind settings inputs */
+const bind=[['leagueId','leagueId'],['season','season'],['swid','swid'],['s2','s2'],
+  ['apiKey','apiKey'],['model','model'],['teamsCount','teamsCount'],['rounds','rounds'],['scoring','scoring']];
+bind.forEach(([id,k])=>{
+  const el=document.getElementById(id);
+  el.value=S.settings[k]??'';
+  el.addEventListener('input',()=>{S.settings[k]=el.value;save()});
+});
+
+function chip(){
+  const p=Object.keys(S.players).length;
+  const me=S.teams.find(t=>t.id===S.settings.myTeamId);
+  document.getElementById('statusChip').textContent =
+    (S.leagueName?S.leagueName+' · ':'')+(me?('You: '+me.name+' · '):'')+p+' players loaded';
+}
+
+/* ============================== helpers ============================== */
+const SUFFIX=/\b(jr|sr|ii|iii|iv|v)\b\.?$/i;
+function normKey(name,pos){
+  let n=String(name||'').toLowerCase().replace(/[.'’,]/g,'').replace(/-/g,' ')
+        .replace(/\b(d\/st|dst|defense|def)\b/g,'').trim().replace(SUFFIX,'').trim()
+        .replace(/\s+/g,' ');
+  if(pos==='DEF'){const w=n.split(' ');n=w[w.length-1]+' dst';}
+  return n;
+}
+function getPlayer(key){return S.players[key];}
+function upsert(name,pos,team,extra){
+  const key=normKey(name,pos);
+  if(!S.players[key]) S.players[key]={name,pos,team:team||'',ranks:{},adp:null,espnId:null};
+  const p=S.players[key];
+  if(!p.pos&&pos)p.pos=pos;
+  if(!p.team&&team)p.team=team;
+  Object.assign(p,extra&&extra.merge?{}:{});
+  return {key,p};
+}
+function consensus(p){
+  const r=Object.values(p.ranks).filter(x=>x>0);
+  return r.length? r.reduce((a,b)=>a+b,0)/r.length : 9999;
+}
+function draftedKeys(){
+  const s=new Set(activePicks().map(x=>x.key));
+  S.keepers.forEach(k=>s.add(k.key));
+  return s;
+}
+
+/* ============================== API calls ============================== */
+async function api(path,body){
+  const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})});
+  const j=await r.json();
+  if(!r.ok) throw new Error(j.error+(j.detail?' — '+j.detail.slice(0,200):''));
+  return j;
+}
+function espn(views,filter){
+  const s=S.settings;
+  return api('/api/espn',{leagueId:s.leagueId,season:s.season,swid:s.swid,s2:s.s2,views,filter});
+}
+
+/* ============================== ESPN connect ============================== */
+async function connectESPN(){
+  const el=document.getElementById('espnStatus');
+  el.innerHTML='<span class="muted">Connecting…</span>';
+  try{
+    const j=await espn(['mSettings','mTeam']);
+    // switching to a different league? clear league-specific data first
+    if(S.connectedLeagueId&&S.connectedLeagueId!==S.settings.leagueId){
+      S.keepers=[];S.picks=[];S.mock={active:false,picks:[]};S.settings.myTeamId=null;
+      clearTimeout(mockTimer);
+      if(pollTimer)togglePoll();
+    }
+    S.connectedLeagueId=S.settings.leagueId;
+    S.leagueName=j.settings?.name||('League '+S.settings.leagueId);
+    S.teams=(j.teams||[]).map(t=>({id:t.id,name:t.name||((t.location||'')+' '+(t.nickname||'')).trim()||('Team '+t.id)}));
+    S.pickOrder=j.settings?.draftSettings?.pickOrder||S.teams.map(t=>t.id);
+    S.settings.teamsCount=S.teams.length||+S.settings.teamsCount;
+    document.getElementById('teamsCount').value=S.settings.teamsCount;
+    const dd=j.settings?.draftSettings?.date;
+    save();
+    el.innerHTML='<span class="ok">✓ Connected: '+esc(S.leagueName)+'</span> · '+S.teams.length+' teams'+
+      (dd?' · draft: '+new Date(dd).toLocaleString():'');
+    const sel=document.getElementById('myTeam');
+    sel.innerHTML='<option value="">— select —</option>'+S.teams.map(t=>`<option value="${t.id}" ${t.id===S.settings.myTeamId?'selected':''}>${esc(t.name)}</option>`).join('');
+    document.getElementById('teamPickWrap').style.display='block';
+    fillTeamSelects(); chip();
+  }catch(e){
+    el.innerHTML='<span class="err">✗ '+esc(e.message)+'</span><br><small class="hint">Private league? Double-check SWID and espn_s2 cookies.</small>';
+  }
+}
+
+/* ============================== rankings sources ============================== */
+// remove any sleeper ranks left over from earlier versions
+for(const k in S.players)delete S.players[k].ranks.sleeper;
+
+const ESPN_POS={1:'QB',2:'RB',3:'WR',4:'TE',5:'K',16:'DEF'};
+const NFL={0:'FA',1:'ATL',2:'BUF',3:'CHI',4:'CIN',5:'CLE',6:'DAL',7:'DEN',8:'DET',9:'GB',10:'TEN',11:'IND',12:'KC',13:'LV',14:'LAR',15:'MIA',16:'MIN',17:'NE',18:'NO',19:'NYG',20:'NYJ',21:'PHI',22:'ARI',23:'PIT',24:'LAC',25:'SF',26:'SEA',27:'TB',28:'WSH',29:'CAR',30:'JAX',33:'BAL',34:'HOU'};
+async function loadESPNRanks(){
+  const el=document.getElementById('srcEspn');
+  if(!S.settings.leagueId){el.innerHTML='<span class="err">Set your League ID on Setup first.</span>';return}
+  el.textContent='Fetching…';
+  try{
+    const scoringKey=S.settings.scoring==='Standard'?'STANDARD':'PPR';
+    const j=await espn(['kona_player_info'],{players:{limit:500,sortDraftRanks:{sortPriority:100,sortAsc:true,value:scoringKey}}});
+    let n=0;
+    for(const w of (j.players||[])){
+      const pl=w.player; if(!pl)continue;
+      const pos=ESPN_POS[pl.defaultPositionId]; if(!pos)continue;
+      const rank=pl.draftRanksByRankType?.[scoringKey]?.rank ?? pl.draftRanksByRankType?.PPR?.rank;
+      const {key,p}=upsert(pl.fullName,pos,NFL[pl.proTeamId]||'');
+      if(rank)p.ranks.espn=rank;
+      const adp=pl.ownership?.averageDraftPosition; if(adp)p.adp=Math.round(adp*10)/10;
+      // last season's actual production + this season's projection
+      for(const st of (pl.stats||[])){
+        if(st.statSourceId===0&&st.seasonId===2025){
+          p.pts25=Math.round(st.appliedTotal||0);
+          p.ppg25=st.appliedAverage?Math.round(st.appliedAverage*10)/10:null;
+        }
+        if(st.statSourceId===1&&st.seasonId===2026)p.proj26=Math.round(st.appliedTotal||0);
+      }
+      p.espnId=pl.id; S.espnIdIndex[pl.id]=key; n++;
+    }
+    save(); el.innerHTML='<span class="ok">✓ '+n+' players (rank + ADP)</span>'; chip(); renderRankings(); fillDatalist();
+  }catch(e){el.innerHTML='<span class="err">✗ '+esc(e.message)+'</span>';}
+}
+
+/* CSV: flexible parser */
+function handleCSV(input){
+  const f=input.files[0]; if(!f)return;
+  const src=document.getElementById('csvSource').value;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const n=parseCSV(reader.result,src);
+      document.getElementById('cnt'+src[0].toUpperCase()+src.slice(1)).textContent=n;
+      save(); renderRankings(); fillDatalist(); chip();
+    }catch(e){alert('CSV error: '+e.message)}
+    input.value='';
+  };
+  reader.readAsText(f);
+}
+function splitLine(line,d){
+  const out=[];let cur='',q=false;
+  for(const ch of line){
+    if(ch==='"'){q=!q;continue}
+    if(ch===d&&!q){out.push(cur);cur='';continue}
+    cur+=ch;
+  }
+  out.push(cur);return out.map(s=>s.trim());
+}
+function parseCSV(text,src){
+  text=text.replace(/^﻿/,''); // strip BOM
+  const lines=text.split(/\r?\n/).filter(l=>l.trim());
+  if(lines.length<2)throw new Error('empty file');
+  // some exports (e.g. PFF) put a title line before the real header — find it
+  let hRow=-1,d=',',hdr=[];
+  const isName=h=>/player|name/.test(h)&&!/team/.test(h);
+  for(let i=0;i<Math.min(5,lines.length);i++){
+    const dd=lines[i].includes('\t')?'\t':',';
+    const cand=splitLine(lines[i],dd).map(x=>x.toLowerCase().trim());
+    if(cand.some(isName)){hRow=i;d=dd;hdr=cand;break}
+  }
+  if(hRow<0)throw new Error('no player/name column found');
+  const nameI=hdr.findIndex(isName);
+  let rankI=hdr.findIndex(h=>/^(rank|rk|overall|ovr)$/.test(h));
+  if(rankI<0)rankI=hdr.findIndex(h=>/\brank\b/.test(h)&&!/position|pos|ecr/.test(h));
+  const posI=hdr.findIndex(h=>/^pos(ition)?$/.test(h));
+  const teamI=hdr.findIndex(h=>/^(team|tm|team abbreviation)$/.test(h));
+  const adpI=hdr.findIndex(h=>h==='adp');
+  let n=0;
+  for(let i=hRow+1;i<lines.length;i++){
+    const c=splitLine(lines[i],d);
+    const name=c[nameI]; if(!name)continue;
+    let pos=posI>=0?(c[posI]||'').toUpperCase().replace(/[0-9]/g,''):'';
+    if(pos==='DST'||pos==='D')pos='DEF';
+    if(pos==='HB'||pos==='FB')pos='RB';
+    const rank=rankI>=0?parseFloat(c[rankI]):i-hRow;
+    if(!(rank>0))continue;
+    const {p}=upsert(name,pos||undefined,teamI>=0?c[teamI]:'');
+    p.ranks[src]=rank;
+    if(adpI>=0){const a=parseFloat(c[adpI]);if(a>0&&p.adp==null)p.adp=a;}
+    n++;
+  }
+  if(!n)throw new Error('no rows parsed');
+  return n;
+}
+
+/* ============================== rankings render ============================== */
+function pool(){
+  return Object.entries(S.players).map(([key,p])=>({key,...p,c:consensus(p)}))
+    .filter(p=>p.c<9999).sort((a,b)=>a.c-b.c);
+}
+function fmtR(v){return v?Math.round(v):'—'}
+function renderRankings(){
+  const q=(document.getElementById('rkSearch').value||'').toLowerCase();
+  const pos=document.getElementById('rkPos').value;
+  const gone=draftedKeys();
+  let rows=pool();
+  document.getElementById('poolCount').textContent='· '+rows.length+' ranked';
+  if(pos)rows=rows.filter(p=>p.pos===pos);
+  if(q)rows=rows.filter(p=>p.name.toLowerCase().includes(q));
+  rows=rows.slice(0,300);
+  document.getElementById('rkTable').innerHTML=
+    '<tr><th>#</th><th>Player</th><th>Pos</th><th>Tm</th><th>FP</th><th>ESPN</th><th>PFF</th><th>UD</th><th>ADP</th><th>’25 PPG</th><th>’26 Proj</th></tr>'+
+    rows.map((p,i)=>`<tr style="${gone.has(p.key)?'opacity:.35;text-decoration:line-through':''}">
+      <td>${i+1}</td><td>${esc(p.name)}</td><td><span class="pos pos-${p.pos}">${p.pos||'?'}</span></td>
+      <td class="muted">${esc(p.team)}</td>
+      <td>${fmtR(p.ranks.fantasypros)}</td><td>${fmtR(p.ranks.espn)}</td>
+      <td>${fmtR(p.ranks.pff)}</td><td>${fmtR(p.ranks.underdog)}</td>
+      <td class="muted">${p.adp??'—'}</td>
+      <td class="muted">${p.ppg25??'—'}</td><td class="muted">${p.proj26??'—'}</td></tr>`).join('');
+}
+function fillDatalist(){
+  document.getElementById('playerList').innerHTML=
+    pool().slice(0,400).map(p=>`<option value="${esc(p.name)}">`).join('');
+}
+
+/* ============================== keepers ============================== */
+function fillTeamSelects(){
+  const opts='<option value="">— team —</option>'+S.teams.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('');
+  document.getElementById('kTeam').innerHTML=opts;
+}
+function addKeeper(){
+  const teamId=+document.getElementById('kTeam').value;
+  const name=document.getElementById('kPlayer').value.trim();
+  const round=+document.getElementById('kRound').value||null;
+  if(!teamId||!name){alert('Pick a team and player.');return}
+  const key=normKey(name);
+  S.keepers.push({teamId,key,name:(getPlayer(key)?.name)||name,round});
+  save(); document.getElementById('kPlayer').value='';document.getElementById('kRound').value='';
+  renderKeepers();
+}
+function renderKeepers(){
+  fillTeamSelects();
+  const byTeam={};
+  S.keepers.forEach((k,i)=>{(byTeam[k.teamId]=byTeam[k.teamId]||[]).push({...k,i})});
+  document.getElementById('keeperList').innerHTML=
+    S.teams.map(t=>{
+      const ks=byTeam[t.id]||[];
+      return `<div style="margin-bottom:8px"><b>${esc(t.name)}</b>${t.id===S.settings.myTeamId?' <span class="gold" style="color:var(--gold)">(you)</span>':''}: `+
+        (ks.length?ks.map(k=>`<span class="pill">${esc(k.name)}${k.round?' · R'+k.round:''} <a href="#" onclick="S.keepers.splice(${k.i},1);save();renderKeepers();return false" style="color:var(--red);text-decoration:none">✕</a></span>`).join(''):'<span class="muted">none</span>')+'</div>';
+    }).join('')||'<p class="muted">Connect to ESPN first to load teams.</p>';
+}
+
+/* ============================== draft logic ============================== */
+function keeperRoundMap(){
+  // (round, teamId) -> keeper  : that pick slot is consumed by the keeper
+  const m={};
+  S.keepers.forEach(k=>{if(k.round)m[k.round+'_'+k.teamId]=k});
+  return m;
+}
+function slotOwner(overall){
+  const N=S.pickOrder.length||+S.settings.teamsCount||10;
+  const order=S.pickOrder.length?S.pickOrder:Array.from({length:N},(_,i)=>i+1);
+  const r=Math.ceil(overall/N), idx=(overall-1)%N;
+  return {round:r, teamId: r%2===1?order[idx]:order[N-1-idx]};
+}
+function livePickCount(){ // picks actually made (ESPN sync/manual/mock)
+  return activePicks().length;
+}
+function currentOverall(){
+  // walk slots; keeper slots auto-consume, others consume from picks
+  let made=0, km=keeperRoundMap();
+  const total=totalPicks();
+  for(let o=1;o<=total;o++){
+    const {round,teamId}=slotOwner(o);
+    if(km[round+'_'+teamId])continue;
+    made++;
+    if(made>livePickCount())return o;
+  }
+  return total+1;
+}
+function myNextPicks(fromOverall,count){
+  const res=[],km=keeperRoundMap();
+  const total=totalPicks();
+  for(let o=fromOverall;o<=total&&res.length<count;o++){
+    const {round,teamId}=slotOwner(o);
+    if(teamId===S.settings.myTeamId&&!km[round+'_'+teamId])res.push(o);
+  }
+  return res;
+}
+function teamName(id){return S.teams.find(t=>t.id===id)?.name||('Team '+id)}
+
+function markDrafted(key,name,teamId,src){
+  if(draftedKeys().has(key))return false;
+  activePicks().push({overall:currentOverall(),teamId,key,name,src});
+  save();return true;
+}
+function manualDraft(){
+  const el=document.getElementById('manualPick');
+  const name=el.value.trim(); if(!name)return;
+  const key=normKey(name);
+  const o=currentOverall(),{teamId}=slotOwner(o);
+  if(markDrafted(key,(getPlayer(key)?.name)||name,teamId,'manual')){el.value='';afterPick();}
+  else alert('Already drafted/kept.');
+}
+function draftRow(key){
+  const p=getPlayer(key); if(!p)return;
+  const o=currentOverall(),{teamId}=slotOwner(o);
+  if(markDrafted(key,p.name,teamId,'manual'))afterPick();
+}
+function undoPick(){
+  const ap=activePicks();
+  if(ap.length&&confirm('Undo: '+ap[ap.length-1].name+'?')){ap.pop();save();afterPick();}
+}
+function afterPick(){renderDraft();maybeAutoAnalyze();if(S.mock.active)scheduleMock();}
+
+/* ---- draft order editor ---- */
+function ensureOrder(){
+  if(!S.teams.length)return;
+  const ids=new Set(S.teams.map(t=>t.id));
+  S.pickOrder=S.pickOrder.filter(id=>ids.has(id));
+  S.teams.forEach(t=>{if(!S.pickOrder.includes(t.id))S.pickOrder.push(t.id)});
+}
+function renderOrder(){
+  ensureOrder();
+  const el=document.getElementById('orderList'); if(!el)return;
+  el.innerHTML=S.pickOrder.map((id,i)=>`<span class="pill">${i+1}. ${esc(teamName(id))}${id===S.settings.myTeamId?' ⭐':''}
+    <a href="#" onclick="moveOrder(${i},-1);return false" style="text-decoration:none">▲</a><a href="#" onclick="moveOrder(${i},1);return false" style="text-decoration:none">▼</a></span>`).join('')
+    ||'<span class="muted">No teams yet — connect ESPN on Setup, or create generic teams.</span>';
+}
+function moveOrder(i,d){
+  const j=i+d; if(j<0||j>=S.pickOrder.length)return;
+  [S.pickOrder[i],S.pickOrder[j]]=[S.pickOrder[j],S.pickOrder[i]];
+  save();renderDraft();
+}
+function createGenericTeams(){
+  const n=+S.settings.teamsCount||10;
+  if(S.teams.length&&!confirm('Replace current teams with Team 1–'+n+'? (Keepers will need re-entering.)'))return;
+  S.teams=Array.from({length:n},(_,i)=>({id:i+1,name:'Team '+(i+1)}));
+  S.pickOrder=S.teams.map(t=>t.id);S.keepers=[];S.settings.myTeamId=1;
+  save();fillTeamSelects();renderDraft();
+  const sel=document.getElementById('myTeam');
+  sel.innerHTML=S.teams.map(t=>`<option value="${t.id}" ${t.id===S.settings.myTeamId?'selected':''}>${esc(t.name)}</option>`).join('');
+  document.getElementById('teamPickWrap').style.display='block';
+  alert('Teams created. You are Team 1 — change it on the Setup tab if needed.');
+}
+
+/* ---- mock draft ---- */
+function teamPosCounts(teamId){
+  const c={};
+  const add=key=>{const pos=getPlayer(key)?.pos;if(pos)c[pos]=(c[pos]||0)+1};
+  activePicks().filter(p=>p.teamId===teamId).forEach(p=>add(p.key));
+  S.keepers.filter(k=>k.teamId===teamId).forEach(k=>add(k.key));
+  return c;
+}
+function simPick(){
+  const o=currentOverall(); if(o>totalPicks())return false;
+  const {round,teamId}=slotOwner(o);
+  const gone=draftedKeys(), counts=teamPosCounts(teamId), R=+S.settings.rounds||16;
+  let cands=pool().filter(p=>!gone.has(p.key)).filter(p=>{
+    if(p.pos==='K'&&((counts.K||0)>=1||round<R-1))return false;
+    if(p.pos==='DEF'&&((counts.DEF||0)>=1||round<R-2))return false;
+    if(p.pos==='QB'&&((counts.QB||0)>=2||((counts.QB||0)>=1&&round<10)))return false;
+    if(p.pos==='TE'&&((counts.TE||0)>=2||((counts.TE||0)>=1&&round<12)))return false;
+    return true;
+  });
+  if(!cands.length)cands=pool().filter(p=>!gone.has(p.key));
+  if(!cands.length)return false;
+  cands.sort((a,b)=>(a.adp||a.c)-(b.adp||b.c));
+  const top=cands.slice(0,6), w=[.32,.24,.17,.12,.09,.06];
+  let r=Math.random(), pick=top[0];
+  for(let i=0;i<top.length;i++){if(r<w[i]){pick=top[i];break}r-=w[i];}
+  return markDrafted(pick.key,pick.name,teamId,'mock');
+}
+function scheduleMock(){clearTimeout(mockTimer);mockTimer=setTimeout(stepMock,450);}
+function stepMock(){
+  if(!S.mock.active)return;
+  const st=document.getElementById('mockStatus');
+  const o=currentOverall();
+  if(o>totalPicks()){renderDraft();st.textContent='Mock complete — review your roster!';return}
+  const {teamId}=slotOwner(o);
+  if(teamId===S.settings.myTeamId){st.textContent='You\'re on the clock — pick from the board.';renderDraft();maybeAutoAnalyze();return}
+  st.textContent='Simulating…';
+  if(simPick()){renderDraft();scheduleMock();}
+}
+function toggleMock(){
+  const btn=document.getElementById('mockBtn');
+  if(S.mock.active){
+    S.mock.active=false;S.mock.picks=[];save();clearTimeout(mockTimer);
+    btn.textContent='▶ Start mock draft';document.getElementById('mockStatus').textContent='';
+    lastAnalyzedPick=-1;renderDraft();return;
+  }
+  if(!pool().length){alert('Load rankings first (Rankings tab).');return}
+  if(!S.teams.length){alert('Connect ESPN (Setup) or click "Create generic teams" first.');return}
+  if(!S.settings.myTeamId){alert('Select your team on the Setup tab first.');return}
+  if(pollTimer)togglePoll();
+  S.mock={active:true,picks:[]};lastAnalyzedPick=-1;save();
+  btn.textContent='■ End mock';
+  renderDraft();scheduleMock();
+}
+
+/* ---- ESPN live sync ---- */
+function togglePoll(){
+  const btn=document.getElementById('pollBtn');
+  if(pollTimer){clearInterval(pollTimer);pollTimer=null;btn.textContent='▶ Start ESPN live sync';document.getElementById('pollStatus').textContent='';return}
+  if(S.mock.active){alert('End the mock draft first.');return}
+  btn.textContent='⏸ Stop sync';
+  syncDraft(); pollTimer=setInterval(syncDraft,5000);
+}
+async function syncDraft(){
+  const st=document.getElementById('pollStatus');
+  try{
+    const j=await espn(['mDraftDetail']);
+    const picks=(j.draftDetail?.picks||[]).filter(p=>p.playerId&&p.playerId>0);
+    const keeperKeys=new Set(S.keepers.map(k=>k.key));
+    const synced=[];
+    for(const pk of picks){
+      const key=S.espnIdIndex[pk.playerId]||('espn_'+pk.playerId);
+      if(keeperKeys.has(key))continue; // keepers show as picks in ESPN; we track separately
+      synced.push({overall:pk.overallPickNumber,teamId:pk.teamId,key,
+        name:getPlayer(key)?.name||('ESPN player #'+pk.playerId),src:'espn'});
+    }
+    if(synced.length){
+      // ESPN is source of truth: replace synced picks, keep manual ones not present
+      const espnKeys=new Set(synced.map(p=>p.key));
+      const manual=S.picks.filter(p=>p.src==='manual'&&!espnKeys.has(p.key));
+      const changed=synced.length+manual.length!==S.picks.length;
+      S.picks=[...synced,...manual].sort((a,b)=>a.overall-b.overall);
+      save(); if(changed)afterPick();
+    }
+    st.innerHTML='<span class="ok">synced '+new Date().toLocaleTimeString()+' · '+picks.length+' picks'+
+      (j.draftDetail?.inProgress?' · LIVE':'')+'</span>';
+  }catch(e){st.innerHTML='<span class="err">'+esc(e.message)+'</span>';}
+}
+
+/* ---- draft render ---- */
+function renderDraft(){
+  renderOrder();
+  const gone=draftedKeys();
+  const o=currentOverall();
+  if(o>totalPicks()){
+    document.getElementById('onClock').innerHTML='<b>Draft complete!</b>'+(S.mock.active?' (mock)':'')+' 🎉';
+  }else{
+  const {round,teamId}=slotOwner(o);
+  const mine=teamId===S.settings.myTeamId;
+  const nexts=myNextPicks(o,3);
+  document.getElementById('onClock').innerHTML=
+    (S.mock.active?'<span class="warn">[MOCK] </span>':'')+
+    `<b>Pick ${o}</b> (Round ${round}) — on the clock: <b class="${mine?'ok':''}">${esc(teamName(teamId))}${mine?' — YOU!':''}</b>`+
+    (nexts.length?` <span class="muted">· your next picks: ${nexts.join(', ')}${nexts[0]?' ('+(nexts[0]-o)+' away)':''}</span>`:'');
+  }
+
+  const pos=document.getElementById('dPos').value,q=(document.getElementById('dSearch').value||'').toLowerCase();
+  let rows=pool().filter(p=>!gone.has(p.key));
+  if(pos)rows=rows.filter(p=>p.pos===pos);
+  if(q)rows=rows.filter(p=>p.name.toLowerCase().includes(q));
+  rows=rows.slice(0,120);
+  document.getElementById('baTable').innerHTML=
+    '<tr><th>Cns</th><th>Player</th><th>Pos</th><th>Value</th><th>ADP</th><th></th></tr>'+
+    rows.map(p=>{
+      const v=Math.round((p.adp||p.c)-o);
+      return `<tr><td>${Math.round(p.c)}</td><td>${esc(p.name)} <span class="muted">${esc(p.team)}</span></td>
+      <td><span class="pos pos-${p.pos}">${p.pos}</span></td>
+      <td class="${v>=5?'ok':v<=-5?'err':''}">${v>0?'+':''}${v}</td>
+      <td class="muted">${p.adp??'—'}</td>
+      <td><button class="mini" onclick="draftRow('${p.key}')">drafted</button></td></tr>`;}).join('');
+
+  const ap=activePicks();
+  const myKeeps=S.keepers.filter(k=>k.teamId===S.settings.myTeamId);
+  const myPicks=ap.filter(p=>p.teamId===S.settings.myTeamId);
+  const roster=[...myKeeps.map(k=>({...k,keep:true})),...myPicks];
+  document.getElementById('myRoster').innerHTML=roster.length?
+    roster.map(r=>{const p=getPlayer(r.key);
+      return `<div class="kv"><span><span class="pos pos-${p?.pos||''}">${p?.pos||'?'}</span> ${esc(r.name)}</span><span class="muted">${r.keep?'keeper R'+(r.round||'?'):'pick '+r.overall}</span></div>`;}).join('')
+    :'No players yet.';
+  document.getElementById('recentPicks').innerHTML=
+    ap.slice(-8).reverse().map(p=>`<div class="kv"><span>${p.overall}. ${esc(p.name)}</span><span class="muted">${esc(teamName(p.teamId))}</span></div>`).join('')||'—';
+}
+
+/* ============================== Claude ============================== */
+async function testClaude(){
+  const el=document.getElementById('claudeStatus');
+  el.innerHTML='<span class="muted">Testing…</span>';
+  try{
+    const j=await api('/api/claude',{apiKey:S.settings.apiKey,payload:{
+      model:S.settings.model,max_tokens:20,messages:[{role:'user',content:'Say OK'}]}});
+    el.innerHTML='<span class="ok">✓ Key works ('+esc(j.model||S.settings.model)+')</span>';
+  }catch(e){el.innerHTML='<span class="err">✗ '+esc(e.message)+'</span>';}
+}
+
+function buildPrompt(){
+  const gone=draftedKeys();
+  const o=currentOverall(),{round}=slotOwner(o);
+  const nexts=myNextPicks(o,3);
+  const avail=pool().filter(p=>!gone.has(p.key)).slice(0,45)
+    .map(p=>`${Math.round(p.c)}. ${p.name} (${p.pos}${p.team?'-'+p.team:''}) [fp:${fmtR(p.ranks.fantasypros)} espn:${fmtR(p.ranks.espn)} pff:${fmtR(p.ranks.pff)} ud:${fmtR(p.ranks.underdog)} adp:${p.adp??'?'} '25ppg:${p.ppg25??'?'} '26proj:${p.proj26??'?'}]`).join('\n');
+  const myKeeps=S.keepers.filter(k=>k.teamId===S.settings.myTeamId).map(k=>{const p=getPlayer(k.key);return`${k.name} (${p?.pos||'?'}, keeper R${k.round||'?'})`}).join(', ')||'none';
+  const ap=activePicks();
+  const myPicks=ap.filter(p=>p.teamId===S.settings.myTeamId).map(p=>{const pl=getPlayer(p.key);return`${p.name} (${pl?.pos||'?'}, pick ${p.overall})`}).join(', ')||'none yet';
+  const posCounts={};ap.filter(p=>gone.has(p.key)).forEach(p=>{const pos=getPlayer(p.key)?.pos;if(pos)posCounts[pos]=(posCounts[pos]||0)+1});
+  return `You are an expert fantasy football draft analyst. It's a live snake draft${S.mock.active?' (PRACTICE MOCK — simulated opponents)':''}.
+
+LEAGUE: ${S.settings.teamsCount}-team ${S.settings.scoring}, ${S.settings.rounds} rounds, keeper league${S.leagueName?' ("'+S.leagueName+'")':''}.
+CURRENT: overall pick ${o}, round ${round}. My upcoming picks: ${nexts.join(', ')||'none left'}.
+MY ROSTER — keepers: ${myKeeps}. Drafted: ${myPicks}.
+POSITIONS ALREADY DRAFTED LEAGUE-WIDE: ${JSON.stringify(posCounts)}.
+
+TOP AVAILABLE (consensus of FantasyPros/ESPN/PFF/Underdog ranks; ADP = average draft position):
+${avail}
+
+Give me:
+1. Top 3 picks right now, ranked, with one-line reasoning each (value vs ADP, roster need, positional scarcity).
+2. Whether I can wait on a position until my next pick (pick ${nexts[1]??'—'}) without losing a tier.
+3. One sleeper still available who's mispriced across the sources.
+Be concise — I'm on the clock.`;
+}
+
+async function askClaude(){
+  const out=document.getElementById('claudeOut'),btn=document.getElementById('askBtn');
+  if(!S.settings.apiKey){out.textContent='Add your Anthropic API key on the Setup tab first (console.anthropic.com → API Keys).';return}
+  if(!pool().length){out.textContent='Load rankings first (Rankings tab).';return}
+  btn.disabled=true;out.textContent='Thinking…';
+  try{
+    const j=await api('/api/claude',{apiKey:S.settings.apiKey,payload:{
+      model:S.settings.model,max_tokens:24000,
+      messages:[{role:'user',content:buildPrompt()}]}});
+    out.textContent=extractText(j);
+    out.classList.remove('flash');void out.offsetWidth;out.classList.add('flash');
+  }catch(e){out.textContent='Error: '+e.message;}
+  btn.disabled=false;
+}
+/* ---- live chat ---- */
+function chatContext(){
+  const myName=teamName(S.settings.myTeamId);
+  const keepersByTeam=S.teams.map(t=>{
+    const ks=S.keepers.filter(k=>k.teamId===t.id);
+    return `- ${t.name}${t.id===S.settings.myTeamId?' (ME)':''}: `+
+      (ks.length?ks.map(k=>{const p=getPlayer(k.key);return `${k.name} (${p?.pos||'?'}${k.round?', costs R'+k.round:''})`}).join('; '):'no keepers entered yet');
+  }).join('\n')||'(no teams loaded)';
+  const gone=draftedKeys();
+  const top=pool().filter(p=>!gone.has(p.key)).slice(0,60)
+    .map(p=>`${Math.round(p.c)}. ${p.name} (${p.pos}${p.team?'-'+p.team:''}) [fp:${fmtR(p.ranks.fantasypros)} espn:${fmtR(p.ranks.espn)} pff:${fmtR(p.ranks.pff)} ud:${fmtR(p.ranks.underdog)} adp:${p.adp??'?'} '25ppg:${p.ppg25??'?'} '26proj:${p.proj26??'?'}]`).join('\n');
+  const ap=activePicks();
+  const mySlot=S.pickOrder.indexOf(S.settings.myTeamId)+1;
+  const draftState=(S.mock.active?'THIS IS A PRACTICE MOCK DRAFT (simulated opponents). ':'')+
+    (mySlot?`My draft slot: #${mySlot} of ${S.pickOrder.length}. `:'')+
+    (ap.length?`Draft in progress: ${ap.length} picks made, current overall pick ${currentOverall()}.`:'Draft has not started.');
+  return `You are an elite fantasy football strategy advisor chatting live with the manager of "${myName}"${S.leagueName?' in the ESPN league "'+S.leagueName+'"':''}. Today is ${new Date().toDateString()} — the 2026 NFL preseason.
+LEAGUE: ${S.settings.teamsCount}-team ${S.settings.scoring} snake keeper league, ${S.settings.rounds} rounds.
+NUANCE, NOT JUST NUMBERS: reason about roles, situations, and context — offseason team changes, coaching schemes, target/carry share, age curves, injury history, rookie landing spots — not just consensus rank. '25ppg = last season's actual PPG (ESPN scoring); '26proj = ESPN's season projection. When rankings disagree sharply between sources, that's usually a signal worth digging into.
+Your training data may predate recent offseason moves and camp news. When a question hinges on current facts (trades, injuries, depth charts, holdouts, camp battles), USE WEB SEARCH to verify before answering — never guess at 2026 offseason events.
+IMPORTANT CONTEXT: The user is the commissioner and submits their keepers LAST, so they can see everyone else's keepers before locking theirs. Use that edge: analyze what other teams' keepers remove from the pool, which positions get scarce, which of the user's candidates gain or lose value, and what the draft board will look like at their slots.
+${draftState}
+
+KEEPERS BY TEAM (live, may still be filling in):
+${keepersByTeam}
+
+TOP AVAILABLE PLAYERS (consensus of FantasyPros/ESPN/PFF/Underdog; keepers already removed):
+${top||'(no rankings loaded yet — tell the user to load them on the Rankings tab)'}
+
+Be concise, direct, and specific. Reference actual keeper picks and ranks when reasoning.`;
+}
+function renderChat(){
+  const log=document.getElementById('chatLog');
+  log.innerHTML=S.chat.map(m=>`<div class="msg ${m.role==='user'?'user':'ai'}"><div class="who">${m.role==='user'?'You':'Claude'}</div>${esc(m.content)}</div>`).join('')
+    ||'<p class="muted">Ask anything — keeper decisions, trade-value checks, draft strategy. Claude sees the whole league state.</p>';
+  log.scrollTop=log.scrollHeight;
+}
+function extractText(j){
+  const txt=(j.content||[]).filter(c=>c.type==='text'||c.text).map(c=>c.text||'').join('\n').trim();
+  if(txt)return txt;
+  const types=(j.content||[]).map(c=>c.type).join(', ')||'none';
+  return `⚠️ Empty reply (stop: ${j.stop_reason||'?'}, blocks: ${types}). `+
+    (j.stop_reason==='max_tokens'?'The model ran out of tokens while thinking — just hit send again.':'Try again or switch model on Setup.');
+}
+let chatBusy=false;
+function apiMessages(){
+  // API requires: first message = user, strictly alternating roles.
+  // Drop error bubbles, merge consecutive same-role messages, strip leading assistant.
+  const clean=S.chat.filter(m=>!(m.role==='assistant'&&m.content.startsWith('⚠️')));
+  const merged=[];
+  for(const m of clean){
+    const last=merged[merged.length-1];
+    if(last&&last.role===m.role)last.content+='\n\n'+m.content;
+    else merged.push({role:m.role,content:m.content});
+  }
+  while(merged.length&&merged[0].role!=='user')merged.shift();
+  return merged.slice(-21).filter((m,i,a)=>i>0||m.role==='user');
+}
+async function sendChat(){
+  if(chatBusy)return; // ignore Enter while a reply is pending
+  const inp=document.getElementById('chatInput'),btn=document.getElementById('chatBtn');
+  const text=inp.value.trim(); if(!text)return;
+  if(!S.settings.apiKey){alert('Add your Anthropic API key on the Setup tab first.');return}
+  chatBusy=true;btn.disabled=true;
+  S.chat.push({role:'user',content:text});save();inp.value='';renderChat();
+  const log=document.getElementById('chatLog');
+  log.insertAdjacentHTML('beforeend','<div class="msg ai" id="chatPending"><div class="who">Claude</div>Thinking…</div>');
+  log.scrollTop=log.scrollHeight;
+  try{
+    let msgs=apiMessages();
+    if(!msgs.length||msgs[msgs.length-1].role!=='user')msgs=[{role:'user',content:text}];
+    const payload={model:S.settings.model,max_tokens:24000,system:chatContext(),messages:msgs};
+    if(document.getElementById('webSearch').checked)
+      payload.tools=[{type:'web_search_20250305',name:'web_search',max_uses:4}];
+    const j=await api('/api/claude',{apiKey:S.settings.apiKey,payload});
+    const reply=extractText(j);
+    S.chat.push({role:'assistant',content:reply});
+  }catch(e){
+    let msg=String(e.message||e);
+    if(/rate|429/i.test(msg))msg+=' — rate limit; wait ~30s and retry.';
+    if(/overloaded|529/i.test(msg))msg+=' — Anthropic servers busy; retry in a moment.';
+    S.chat.push({role:'assistant',content:'⚠️ Error: '+msg});
+  }finally{
+    chatBusy=false;btn.disabled=false;
+  }
+  save();renderChat();
+  document.getElementById('chatInput').focus();
+}
+
+function maybeAutoAnalyze(){
+  if(!document.getElementById('autoAnalyze').checked)return;
+  const o=currentOverall(),{teamId}=slotOwner(o);
+  if(teamId===S.settings.myTeamId&&o!==lastAnalyzedPick){lastAnalyzedPick=o;askClaude();}
+}
+
+/* ============================== init ============================== */
+if(S.teams.length){
+  document.getElementById('teamPickWrap').style.display='block';
+  const sel=document.getElementById('myTeam');
+  sel.innerHTML='<option value="">— select —</option>'+S.teams.map(t=>`<option value="${t.id}" ${t.id===S.settings.myTeamId?'selected':''}>${esc(t.name)}</option>`).join('');
+  document.getElementById('espnStatus').innerHTML='<span class="ok">✓ '+esc(S.leagueName)+' (saved)</span>';
+  fillTeamSelects();
+}
+{
+  const n=pool().filter(p=>p.ranks.espn).length;
+  if(n)document.getElementById('srcEspn').innerHTML='<span class="ok">✓ '+n+' players (saved)</span>';
+}
+['underdog','pff','fantasypros'].forEach(s=>{
+  const n=pool().filter(p=>p.ranks[s]).length;
+  const el=document.getElementById('cnt'+s[0].toUpperCase()+s.slice(1)); if(el)el.textContent=n;
+});
+if(S.mock.active){
+  const b=document.getElementById('mockBtn');
+  if(b)b.textContent='■ End mock';
+  scheduleMock();
+}
+fillDatalist();chip();renderRankings();
+</script>
+</body>
+</html>
